@@ -3,6 +3,8 @@
 An opinionated and simplified way to do API first pub/sub. What gRPC is to REST gPubSub is to message queues.
 Support for Apache Kafka, Google Cloud Pub/Sub and Amazon Kinesis.
 
+Current status: thinking about it...
+
 ## Protobuf Source
 
 Service definition
@@ -10,7 +12,7 @@ Service definition
 ```protobuf
 package helloworld;
 
-// The greeting pub definition.
+// The greeting publisher definition.
 pub GreeterPub {
   // Pub a message
   pub SayHello (HelloMessage) {}
@@ -18,7 +20,7 @@ pub GreeterPub {
   pub SayHelloBatch (repeated HelloMessage) {}
 }
 
-// The greeting sub definition.
+// The greeting subscription definition.
 sub GreeterSub {
   // Sub a message
   sub GetHello () returns (HelloMessage) {}
@@ -77,7 +79,7 @@ func main() {
     s := pb.NewGreeterSub(conn, "/hello_topic")
     hello, err := s.GetHello(context.Background())
     if err != nil {
-        log.Fatalf("could not publish message: %v", err)
+        log.Fatalf("could not fetch message: %v", err)
     }
     log.Printf("Hi: %s", hello.Name)
 }
@@ -92,7 +94,7 @@ type HelloMessage struct {
     Name string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
 }
 
-func NewGreeterPub(cc *grpc.ClientConn, topic string) GreeterPub {
+func NewGreeterPub(cc *gpubsub.ClientConn, topic string) GreeterPub {
     ...
 }
 
@@ -101,12 +103,12 @@ type GreeterPub interface {
     SayHelloBatch(ctx context.Context, in []*HelloRequest, opts ...gpubsub.PubOption) (error)
 }
 
-func NewGreeterSub(cc *grpc.ClientConn, topic string) GreeterSub {
+func NewGreeterSub(cc *gpubsub.ClientConn, topic string) GreeterSub {
     ...
 }
 
 type GreeterSub interface {
-    GetHello(ctx context.Context, opts ...grpc.SubOption) (*HelloMessage, error)
-    GetHellos(ctx context.Context, batchSize int, opts ...grpc.SubOption) ([]*HelloMessage, error)
+    GetHello(ctx context.Context, opts ...gpubsub.SubOption) (*HelloMessage, error)
+    GetHellos(ctx context.Context, batchSize int, opts ...gpubsub.SubOption) ([]*HelloMessage, error)
 }
 ```
