@@ -46,12 +46,12 @@ Example implementation:
 package main
 
 import (
-	"log"
+    "log"
 
-	"golang.org/x/net/context"
-	"github.com/gpubsub/gpubsub"
-	"github.com/gpubsub/kafka"
-	pb "helloworld/helloworld"
+    "golang.org/x/net/context"
+    "github.com/gpubsub/gpubsub"
+    "github.com/gpubsub/kafka"
+    pb "helloworld/helloworld"
 )
 
 func main() {
@@ -62,9 +62,13 @@ func main() {
     }
     defer conn.Close()
 
+    msg := pb.HelloMessage{
+        Name: "Neo",
+    }
+
     // Publish Message
     p := pb.NewGreeterPub(conn, "/hello_topic")
-    err := p.SayHello(context.Background(), &pb.HelloMessage{Name: "Neo"})
+    err := p.SayHello(context.Background(), &msg)
     if err != nil {
         log.Fatalf("could not publish message: %v", err)
     }
