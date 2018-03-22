@@ -12,9 +12,14 @@ package helloworld;
 
 // The greeting pub/sub definition.
 pubsub Greeter {
-  // Sends a greeting
-  pub SayHello (HelloRequest) {}
-  sub GetHello () returns (HelloReply) {}
+  // Pub a message
+  pub SayHello (HelloMessage) {}
+  // Pub a batch messages
+  pub SayHelloBatch (repeated HelloMessage) {}
+  // Sub a message
+  sub GetHello () returns (HelloMessage) {}
+  // Sub a batch of messages
+  sub GetHellos () returns (repeated HelloMessage) {}
 }
 
 // The request message containing the user's name.
@@ -30,6 +35,8 @@ Generate clients and models:
 ```bash
 $ gpubsub -I helloworld/ helloworld/helloworld.proto --go_out=plugins=gpubsub:helloworld
 ```
+
+Example implementation:
 
 ```golang
 package main
@@ -77,9 +84,11 @@ type HelloMessage struct {
 
 type GreeterPub interface {
 	SayHello(ctx context.Context, in *HelloRequest, opts ...gpubsub.PubOption) (error)
+	SayHelloBatch(ctx context.Context, in []*HelloRequest, opts ...gpubsub.PubOption) (error)
 }
 
 type GreeterSub interface {
 	GetHello(ctx context.Context, opts ...grpc.SubOption) (*HelloMessage, error)
+	GetHellos(ctx context.Context, batchSize int, opts ...grpc.SubOption) ([]*HelloMessage, error)
 }
 ```
