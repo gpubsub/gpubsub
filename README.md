@@ -88,9 +88,17 @@ type HelloMessage struct {
     Name string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
 }
 
+func NewGreeterPub(cc *grpc.ClientConn, topic string) GreeterPub {
+    ...
+}
+
 type GreeterPub interface {
     SayHello(ctx context.Context, in *HelloRequest, opts ...gpubsub.PubOption) (error)
     SayHelloBatch(ctx context.Context, in []*HelloRequest, opts ...gpubsub.PubOption) (error)
+}
+
+func NewGreeterSub(cc *grpc.ClientConn, topic string) GreeterSub {
+    ...
 }
 
 type GreeterSub interface {
