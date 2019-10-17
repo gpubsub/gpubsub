@@ -1,6 +1,6 @@
 # gPubSub
 
-An opinionated and simplified way to do API first pub/sub. What gRPC is to REST gPubSub is to message queues.
+An opinionated and simplified way to do API first pub/sub.
 Support for Apache Kafka, Google Cloud Pub/Sub and Amazon Kinesis.
 
 Current status: thinking about it...
@@ -13,19 +13,10 @@ Service definition
 package helloworld;
 
 // The greeting publisher definition.
-pub GreeterPub {
-  // Pub a message
-  pub SayHello (HelloMessage) {}
-  // Pub a batch messages
-  pub SayHelloBatch (repeated HelloMessage) {}
-}
-
-// The greeting subscription definition.
-sub GreeterSub {
-  // Sub a message
-  sub GetHello () returns (HelloMessage) {}
-  // Sub a batch of messages
-  sub GetHellos () returns (repeated HelloMessage) {}
+service Greeter {
+  // Takes a `HelloMessage` when publishing
+  // Returns a `HelloMessage` when subscribing
+  rpc SayHello (HelloMessage) returns (HelloMessage);
 }
 
 // The request message containing the user's name.
@@ -51,7 +42,6 @@ import (
     "log"
 
     "golang.org/x/net/context"
-    "github.com/gpubsub/gpubsub"
     "github.com/gpubsub/kafka"
     pb "helloworld/helloworld"
 )
@@ -75,13 +65,19 @@ func main() {
         log.Fatalf("could not publish message: %v", err)
     }
 
-    // Get to Messages
+    // Get Messages
     s := pb.NewGreeterSub(conn, "/hello_topic")
-    hello, err := s.GetHello(context.Background())
+
+    // Message Processor
+    processor := func(*HelloMessage) error {
+        log.Printf("Hi: %s", hello.Name)
+        return nil
+    }
+
+    err := s.SayHello(context.Background(), processor)
     if err != nil {
         log.Fatalf("could not fetch message: %v", err)
     }
-    log.Printf("Hi: %s", hello.Name)
 }
 ```
 
@@ -94,21 +90,29 @@ type HelloMessage struct {
     Name string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
 }
 
-func NewGreeterPub(cc *gpubsub.ClientConn, topic string) GreeterPub {
-    ...
-}
+// Publisher
+func NewGreeterPub(cc *gpubsub.ClientConn, topic string, opts ...gpubsub.PubConnOption) GreeterPub { ... }
 
-type GreeterPub interface {
-    SayHello(ctx context.Context, in *HelloRequest, opts ...gpubsub.PubOption) (error)
-    SayHelloBatch(ctx context.Context, in []*HelloRequest, opts ...gpubsub.PubOption) (error)
-}
+type GreeterPub struct { ... }
 
-func NewGreeterSub(cc *gpubsub.ClientConn, topic string) GreeterSub {
-    ...
-}
+func (pub *GreeterPub) SayHello(ctx context.Context, in *HelloRequest, opts ...gpubsub.PubOption) (error) { ... }
 
-type GreeterSub interface {
-    GetHello(ctx context.Context, opts ...gpubsub.SubOption) (*HelloMessage, error)
-    GetHellos(ctx context.Context, batchSize int, opts ...gpubsub.SubOption) ([]*HelloMessage, error)
-}
+func (pub *GreeterPub) SayHelloBatch(ctx context.Context, in []*HelloRequest, opts ...gpubsub.PubOption) (error) { ... }
+
+// Subscriber
+func NewGreeterSub(cc *gpubsub.ClientConn, topic string, opts ...gpubsub.SubConnOption) GreeterSub { ... }
+
+type GreeterSub struct { ... }
+
+func (sub *GreeterSub) SayHelloSub(
+    ctx context.Context,
+    processor func(*HelloMessage) error,
+    opts ...gpubsub.SubOption,
+) error { ...  }
+
+func (sub *GreeterSub) SayHelloSubBatch(
+    ctx context.Context,
+    processor func([]*HelloMessage) error,
+    opts ...gpubsub.SubOption,
+) error { ...  }
 ```
