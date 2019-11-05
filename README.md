@@ -60,7 +60,7 @@ func main() {
 
     // Publish Message
     p := pb.NewGreeterPub(conn, "/hello_topic")
-    err := p.SayHello(context.Background(), &msg)
+    err = p.SayHello(context.Background(), &msg)
     if err != nil {
         log.Fatalf("could not publish message: %v", err)
     }
@@ -74,7 +74,7 @@ func main() {
         return nil
     }
 
-    err := s.SayHello(context.Background(), processor)
+    err = s.SayHello(context.Background(), processor)
     if err != nil {
         log.Fatalf("could not fetch message: %v", err)
     }
