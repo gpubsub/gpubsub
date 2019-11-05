@@ -91,16 +91,32 @@ type HelloMessage struct {
 }
 
 // Publisher
-func NewGreeterPub(cc *gpubsub.ClientConn, topic string, opts ...gpubsub.PubConnOption) GreeterPub { ... }
+func NewGreeterPub(
+    cc *gpubsub.ClientConn,
+    topic string,
+    opts ...gpubsub.PubConnOption
+ ) GreeterPub { ... }
 
 type GreeterPub struct { ... }
 
-func (pub *GreeterPub) SayHello(ctx context.Context, in *HelloRequest, opts ...gpubsub.PubOption) (error) { ... }
+func (pub *GreeterPub) SayHello(
+    ctx context.Context,
+    in *HelloRequest,
+    opts ...gpubsub.PubOption
+) error { ... }
 
-func (pub *GreeterPub) SayHelloBatch(ctx context.Context, in []*HelloRequest, opts ...gpubsub.PubOption) (error) { ... }
+func (pub *GreeterPub) SayHelloBatch(
+    ctx context.Context,
+     in []*HelloRequest,
+     opts ...gpubsub.PubOption
+) error { ... }
 
 // Subscriber
-func NewGreeterSub(cc *gpubsub.ClientConn, topic string, opts ...gpubsub.SubConnOption) GreeterSub { ... }
+func NewGreeterSub(
+    cc *gpubsub.ClientConn,
+    topic string,
+    opts ...gpubsub.SubConnOption
+) GreeterSub { ... }
 
 type GreeterSub struct { ... }
 
